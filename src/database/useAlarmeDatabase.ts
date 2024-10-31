@@ -10,7 +10,7 @@ export type AlarmeDatabase = {
 export function useAlarmeDatabase() {
   const database = useSQLiteContext();
 
-  async function create(data: Omit<AlarmeDatabase, "id">) {
+  async function criar(data: Omit<AlarmeDatabase, "id">) {
     const statement = await database.prepareAsync(
       "INSERT INTO alarmes (tempo, nome, ativo) VALUES ($tempo, $nome, $ativo)"
     );
@@ -29,4 +29,53 @@ export function useAlarmeDatabase() {
       await statement.finalizeAsync();
     }
   }
+
+  async function atualizar(data: AlarmeDatabase) {
+    const statement = await database.prepareAsync(
+      "UPDATE alarmes SET tempo = $tempo, nome = $nome, ativo = $ativo WHERE id = $id"
+    );
+
+    try {
+      await statement.executeAsync({
+        $id: data.id,
+        $tempo: data.tempo,
+        $nome: data.nome,
+        $ativo: data.ativo
+      });
+    } catch (error) {
+      throw error;
+    } finally {
+      await statement.finalizeAsync();
+    }
+  }
+
+  async function remover(id: number) {
+    try {
+      await database.execAsync("DELETE FROM alarmes WHERE id = " + id)
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async function buscarUm(id: number) {
+    try {
+      const query = "SELECT * FROM alarmes WHERE id = ?"
+      const response = await database.getFirstAsync<AlarmeDatabase>(query, [id]);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async function buscarTodos() {
+    try {
+      const query = "SELECT * FROM alarmes"
+      const response = await database.getAllAsync<AlarmeDatabase>(query);
+      return response;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  return { criar, atualizar, remover, buscarUm, buscarTodos }
 }
