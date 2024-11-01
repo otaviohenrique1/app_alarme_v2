@@ -6,7 +6,7 @@ export async function initializeDatabase(database: SQLiteDatabase) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       tempo TEXT NOT NULL,
       nome TEXT NOT NULL,
-      ativo BOOLEAN NOT NULL,
+      ativo BOOLEAN NOT NULL
     );
   `);
 }

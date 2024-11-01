@@ -6,6 +6,10 @@ import { format } from "date-fns";
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { Switch, Text, Button, TextInput  } from 'react-native-paper';
+import { IconButton, MD3Colors } from 'react-native-paper';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { NativeStackRootStaticParamList } from './routes';
+import { AlarmeDatabase, useAlarmeDatabase } from "../database/useAlarmeDatabase";
 
 interface FormTypes {
   nome: string;
@@ -19,15 +23,23 @@ const SchemaValidacao = Yup.object().shape({
   nome: Yup.string().required('Campo vazio'),
 });
 
-export function Formulario() {
-  const [alarmTime, setAlarmTime] = useState<Date | undefined>(undefined);
-  const [isEnabled, setIsEnabled] = useState(false);
-  const toggleSwitch = () => setIsEnabled(previousState => !previousState);
+type Props = NativeStackScreenProps<NativeStackRootStaticParamList, "HomePage">;
 
-  const tempo = format(alarmTime ? alarmTime : new Date(), "HH:mm");
+export function Formulario({ navigation }: Props) {
+  const [alarmeTempo, setAlarmeTempo] = useState<Date | undefined>(undefined);
+  const [ativo, setAtivo] = useState(false);
+  const toggleSwitch = () => setAtivo(estadoAnterior => !estadoAnterior);
+
+  const tempo = format(alarmeTempo ? alarmeTempo : new Date(), "HH:mm");
 
   return (
     <Container>
+      <IconButton
+        icon="arrow-left"
+        iconColor={MD3Colors.tertiary0}
+        size={30}
+        onPress={() => navigation.goBack()}
+      />
       <Formik
         initialValues={valoresIniciais}
         onSubmit={values => console.log(values)}
@@ -39,7 +51,7 @@ export function Formulario() {
               {/* <Text style={styles.tempoLabel}></Text> */}
               <Text variant="displayLarge">{tempo}</Text>
             </View>
-            <TimePicker onChange={(event, date) => setAlarmTime(date)} />
+            <TimePicker onChange={(evento, data) => setAlarmeTempo(data)} />
             <View style={{ marginVertical: 20 }}>
               <TextInput
                 onChangeText={handleChange('nome')}
@@ -52,13 +64,13 @@ export function Formulario() {
               ) : null}
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
-              <Text variant="bodyLarge">{isEnabled ? "Ativado" : "Desativado"}</Text>
+              <Text variant="bodyLarge">{ativo ? "Ativado" : "Desativado"}</Text>
               <Switch
                 // trackColor={{false: '#767577', true: '#81b0ff'}}
                 // thumbColor={isEnabled ? '#f5dd4b' : '#f4f3f4'}
                 // ios_backgroundColor="#3e3e3e"
                 onValueChange={toggleSwitch}
-                value={isEnabled}
+                value={ativo}
               />
             </View>
             <Button mode="contained" onPress={() => handleSubmit()}>
