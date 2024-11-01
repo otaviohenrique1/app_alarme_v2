@@ -4,7 +4,7 @@ export type AlarmeDatabase = {
   id: number;
   tempo: string;
   nome: string;
-  ativo: boolean;
+  ativo: boolean | number;
 }
 
 export function useAlarmeDatabase() {
@@ -49,6 +49,23 @@ export function useAlarmeDatabase() {
     }
   }
 
+  async function atualizarAtivo(data: AlarmeDatabase) {
+    const statement = await database.prepareAsync(
+      "UPDATE alarmes SET ativo = $ativo WHERE id = $id"
+    );
+
+    try {
+      await statement.executeAsync({
+        $id: data.id,
+        $ativo: data.ativo
+      });
+    } catch (error) {
+      throw error;
+    } finally {
+      await statement.finalizeAsync();
+    }
+  }
+
   async function remover(id: number) {
     try {
       await database.execAsync("DELETE FROM alarmes WHERE id = " + id)
@@ -71,11 +88,18 @@ export function useAlarmeDatabase() {
     try {
       const query = "SELECT * FROM alarmes"
       const response = await database.getAllAsync<AlarmeDatabase>(query);
-      return response;
+      return response.map((item) => {
+        return {
+          id: item.id,
+          tempo: item.tempo,
+          nome: item.nome,
+          ativo: (item.ativo === 1) ? true : false,
+        }
+      })
     } catch (error) {
       throw error;
     }
   }
 
-  return { criar, atualizar, remover, buscarUm, buscarTodos }
+  return { criar, atualizar, atualizarAtivo, remover, buscarUm, buscarTodos }
 }

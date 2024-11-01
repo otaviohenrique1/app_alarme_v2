@@ -31,6 +31,7 @@ export function Formulario({ navigation }: Props) {
   const toggleSwitch = () => setAtivo(estadoAnterior => !estadoAnterior);
 
   const tempo = format(alarmeTempo ? alarmeTempo : new Date(), "HH:mm");
+  const alarmeDatabase = useAlarmeDatabase();
 
   return (
     <Container>
@@ -42,7 +43,19 @@ export function Formulario({ navigation }: Props) {
       />
       <Formik
         initialValues={valoresIniciais}
-        onSubmit={values => console.log(values)}
+        onSubmit={async (values) => {
+          try {
+            const resposta = await alarmeDatabase.criar({
+              tempo: tempo,
+              nome: values.nome,
+              ativo: ativo
+            });
+            console.log(resposta.insertedRowId);
+            navigation.goBack();
+          } catch (error) {
+            console.error(error);
+          }
+        }}
         validationSchema={SchemaValidacao}
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
