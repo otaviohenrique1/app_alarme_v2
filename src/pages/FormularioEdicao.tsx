@@ -1,7 +1,7 @@
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, TextInput as TextInput2 } from 'react-native';
 import { Container } from '../components/Container';
 import { TimePicker } from '../components/TimePicker';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { format } from "date-fns";
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -15,23 +15,50 @@ interface FormTypes {
   nome: string;
 }
 
-const valoresIniciais: FormTypes = {
-  nome: ""
-};
-
 const SchemaValidacao = Yup.object().shape({
   nome: Yup.string().required('Campo vazio'),
 });
 
-type Props = NativeStackScreenProps<NativeStackRootStaticParamList, "HomePage">;
+type Props = NativeStackScreenProps<NativeStackRootStaticParamList, "FormularioEdicao">;
 
-export function Formulario({ navigation }: Props) {
+const alarmeDadosIniciais: AlarmeDatabase = {
+  id: 0,
+  tempo: '',
+  nome: '',
+  ativo: false
+} ;
+
+const valoresIniciais: FormTypes = {
+  nome: ""
+};
+
+export function FormularioEdicao({ navigation, route }: Props) {
   const [alarmeTempo, setAlarmeTempo] = useState<Date | undefined>(undefined);
-  const [ativo, setAtivo] = useState(false);
+  const [ativo, setAtivo] = useState<boolean>(false);
+  const [data, setData] = useState<AlarmeDatabase>(alarmeDadosIniciais);
+  const [nome, setNome] = useState<string>("");
+  const [initialValues, setInitialValues] = useState<FormTypes>(valoresIniciais);
+  const alarmeDatabase = useAlarmeDatabase();
+  
+  const tempo = format(alarmeTempo ? alarmeTempo : new Date(), "HH:mm");
+  
   const toggleSwitch = () => setAtivo(estadoAnterior => !estadoAnterior);
 
-  const tempo = format(alarmeTempo ? alarmeTempo : new Date(), "HH:mm");
-  const alarmeDatabase = useAlarmeDatabase();
+  const { id } = route.params;
+
+  async function busca(id: number) {
+    const alarme = await alarmeDatabase.buscarUm(id);
+    setData(alarme ? alarme : alarmeDadosIniciais);
+    console.log(alarme);
+  }
+  
+  useEffect(() => {
+    busca(Number(id));
+    setAtivo(data.ativo as boolean);
+    setNome(data.nome);
+    setInitialValues({ nome: data.nome })
+    // data.tempo;
+  }, [nome]);
 
   return (
     <Container>
@@ -42,15 +69,15 @@ export function Formulario({ navigation }: Props) {
         onPress={() => navigation.goBack()}
       />
       <Formik
-        initialValues={valoresIniciais}
+        initialValues={initialValues}
         onSubmit={async (values) => {
           try {
-            const resposta = await alarmeDatabase.criar({
+            await alarmeDatabase.atualizar({
+              id: Number(id),
               tempo: tempo,
               nome: values.nome,
               ativo: ativo
             });
-            console.log(resposta.insertedRowId);
             navigation.goBack();
           } catch (error) {
             console.error(error);
@@ -61,8 +88,12 @@ export function Formulario({ navigation }: Props) {
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched }) => (
           <View>
             <View style={styles.containerTempo}>
-              {/* <Text style={styles.tempoLabel}></Text> */}
               <Text variant="displayLarge">{tempo}</Text>
+              <Text variant="displayLarge">{data.tempo}</Text>
+              <Text variant="headlineLarge">1: {initialValues.nome}</Text>
+              <Text variant="headlineLarge">2: {data.nome}</Text>
+              <Text variant="headlineLarge">3: {data.ativo.toString()}</Text>
+              <Text variant="headlineLarge">4: {ativo.toString()}</Text>
             </View>
             <TimePicker onChange={(evento, data) => setAlarmeTempo(data)} />
             <View style={{ marginVertical: 20 }}>
@@ -75,6 +106,12 @@ export function Formulario({ navigation }: Props) {
               {errors.nome && touched.nome ? (
                 <Text variant="titleMedium">{errors.nome}</Text>
               ) : null}
+              <TextInput2
+                onChangeText={handleChange('nome')}
+                onBlur={handleBlur('nome')}
+                value={values.nome}
+                placeholder="Nome do alarme"
+              />
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <Text variant="bodyLarge">{ativo ? "Ativado" : "Desativado"}</Text>

@@ -1,14 +1,16 @@
 import { View } from "react-native";
-import { IconButton, List, MD3Colors, Switch, Modal, Portal, Text } from 'react-native-paper';
+import { IconButton, List, MD3Colors, Switch, Modal, Portal, Text, Button } from 'react-native-paper';
 import { AlarmeDatabase, useAlarmeDatabase } from "../database/useAlarmeDatabase";
 import { useEffect, useState } from 'react';
 
 interface ItemListaProps {
-  data: AlarmeDatabase
+  data: AlarmeDatabase;
+  navigation: any;
 }
 
 export function ItemLista(props: ItemListaProps) {
-  const { id, tempo, nome, ativo } = props.data;
+  const { data, navigation } = props;
+  const { id, tempo, nome, ativo } = data;
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const [visible, setVisible] = useState(false);
   const alarmeDatabase = useAlarmeDatabase();
@@ -46,16 +48,23 @@ export function ItemLista(props: ItemListaProps) {
             iconColor={MD3Colors.tertiary0}
             size={30}
             onPress={showModal}
-            // onPress={() => remover(id)}
+            // 
           />
           <Portal>
             <Modal visible={visible} onDismiss={hideModal} contentContainerStyle={{backgroundColor: 'white', padding: 20}}>
-              <Text>Example Modal.  Click outside this area to dismiss.</Text>
+              <Text variant="titleLarge">Deseja remover o alarme?</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", marginTop: 10}}>
+                <Button mode="contained" style={{ marginEnd: 10 }} onPress={() => remover(id)}>Sim</Button>
+                <Button mode="outlined" onPress={hideModal}>Não</Button>
+              </View>
             </Modal>
           </Portal>
         </View>
       )}
       style={{ marginBottom: 10, borderColor: "black", borderWidth: 1, borderRadius: 10 }}
+      onPress={() => {
+        navigation.navigate("FormularioEdicao", { id: id })
+      }}
     />
   );
 }

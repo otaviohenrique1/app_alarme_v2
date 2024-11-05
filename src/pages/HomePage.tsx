@@ -39,6 +39,7 @@ export function HomePage({ navigation }: Props) {
           <ItemLista
             key={item.id}
             data={item}
+            navigation={navigation}
           />
         )}
       />

@@ -74,11 +74,20 @@ export function useAlarmeDatabase() {
     }
   }
 
+  function converteAtivo(ativo: number | boolean) {
+    return (ativo === 1) ? true : false
+  }
+
   async function buscarUm(id: number) {
     try {
       const query = "SELECT * FROM alarmes WHERE id = ?"
       const response = await database.getFirstAsync<AlarmeDatabase>(query, [id]);
-      return response;
+      return {
+        id: (response?.id) ? response.id : 0,
+        tempo: (response?.tempo) ? response?.tempo : "00:00",
+        nome: (response?.nome) ? response.nome : "",
+        ativo: converteAtivo((response?.ativo) ? response.ativo : 0),
+      }
     } catch (error) {
       throw error;
     }
@@ -95,7 +104,7 @@ export function useAlarmeDatabase() {
           nome: item.nome,
           ativo: (item.ativo === 1) ? true : false,
         }
-      })
+      });
     } catch (error) {
       throw error;
     }

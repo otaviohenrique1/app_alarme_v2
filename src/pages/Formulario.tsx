@@ -23,7 +23,7 @@ const SchemaValidacao = Yup.object().shape({
   nome: Yup.string().required('Campo vazio'),
 });
 
-type Props = NativeStackScreenProps<NativeStackRootStaticParamList, "HomePage">;
+type Props = NativeStackScreenProps<NativeStackRootStaticParamList, "Formulario">;
 
 export function Formulario({ navigation }: Props) {
   const [alarmeTempo, setAlarmeTempo] = useState<Date | undefined>(undefined);
