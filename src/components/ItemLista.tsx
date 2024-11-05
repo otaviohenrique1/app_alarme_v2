@@ -2,19 +2,22 @@ import { List, Switch } from 'react-native-paper';
 import { AlarmeDatabase, useAlarmeDatabase } from "../database/useAlarmeDatabase";
 import { useEffect, useState } from 'react';
 
-interface ItemListaProps extends Omit<AlarmeDatabase, "id"> {
-
+interface ItemListaProps  {
+  data: AlarmeDatabase
 }
 
 export function ItemLista(props: ItemListaProps) {
-  const { tempo, nome, ativo } = props;
+  const { id, tempo, nome, ativo } = props.data;
   const [isSwitchOn, setIsSwitchOn] = useState(false);
   const alarmeDatabase = useAlarmeDatabase();
 
-  const onToggleSwitch = () => setIsSwitchOn(!isSwitchOn);
+  const onToggleSwitch = async () => {
+    setIsSwitchOn(!isSwitchOn)
+    await alarmeDatabase.atualizarAtivo(id, !isSwitchOn);
+  };
 
   useEffect(() => {
-    setIsSwitchOn(ativo as boolean)
+    setIsSwitchOn(ativo as boolean);
   }, []);
 
 

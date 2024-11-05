@@ -38,9 +38,7 @@ export function HomePage({ navigation }: Props) {
         renderItem={({ item }) => (
           <ItemLista
             key={item.id}
-            nome={item.nome}
-            tempo={item.tempo}
-            ativo={item.ativo}
+            data={item}
           />
         )}
       />

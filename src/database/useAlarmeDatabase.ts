@@ -49,15 +49,15 @@ export function useAlarmeDatabase() {
     }
   }
 
-  async function atualizarAtivo(data: AlarmeDatabase) {
+  async function atualizarAtivo(id: number, ativo: boolean) {
     const statement = await database.prepareAsync(
       "UPDATE alarmes SET ativo = $ativo WHERE id = $id"
     );
 
     try {
       await statement.executeAsync({
-        $id: data.id,
-        $ativo: data.ativo
+        $id: id,
+        $ativo: ativo
       });
     } catch (error) {
       throw error;
